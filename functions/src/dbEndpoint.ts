@@ -24,14 +24,25 @@ export const getPack = functions.https.onRequest((request, response) => {
 
     marmosadCards.doc('valid-card-packs').get().then((doc) => {
         if (doc.exists) {
-            console.log(doc.data().whiteCardCount);
-            return true
+            console.log(doc.data());
+            if (doc.data()[requestedCardPack]) {
+                return true
+            }
+            else {
+                response.status(400).send('requested card pack: ' + requestedCardPack + ' was not found');
+                return false
+            }
         } else {
             response.status(500).send('card pack validation failed, no card pack metadata found');
             return false
         }
     }).then((success) => {
         if (success) {
+            marmosadCards.doc(requestedCardPack).getCollections().then((collections) => {
+                collections.forEach(collection => {
+                    console.log(collection)
+                })
+            })
             response.status(200).send({
                 message: 'Successfully returned card pack: ' + requestedCardPack,
                 whiteCardCount: whiteCardCount,
