@@ -10,8 +10,8 @@ db.settings(settings);
 const marmosadCards = db.collection("marmosad-cards");
 
 export const getPack = functions.https.onRequest((request, response) => {
-    let whiteCardCount = 0;
-    let blackCardCount = 0;
+    let whiteCardCount = -1;
+    let blackCardCount = -1;
 
     let requestedCardPack = request.get('card-pack-name');
     console.log(requestedCardPack);
@@ -38,15 +38,19 @@ export const getPack = functions.https.onRequest((request, response) => {
         }
     }).then((success) => {
         if (success) {
-            marmosadCards.doc(requestedCardPack).getCollections().then((collections) => {
-                collections.forEach(collection => {
-                    console.log(collection)
+            marmosadCards.doc(requestedCardPack).collection('black-cards').get().then(collection => {
+                blackCardCount = collection.size;
+                return
+            }).then(() => {
+                marmosadCards.doc(requestedCardPack).collection('white-cards').get().then((collection) => {
+                    whiteCardCount = collection.size;
+                    return
+                }).then(() => {
+                    response.send({
+                        message: 'Successfully returned ' + requestedCardPack,
+                        responseObj: {whiteCardCount: whiteCardCount, blackCardCount: blackCardCount}
+                    })
                 })
-            })
-            response.status(200).send({
-                message: 'Successfully returned card pack: ' + requestedCardPack,
-                whiteCardCount: whiteCardCount,
-                blackCardCount: blackCardCount
             });
         }
         return
