@@ -13,7 +13,7 @@ export const getPack = functions.https.onRequest((request, response) => {
     let whiteCardCount = -1;
     let blackCardCount = -1;
 
-    let requestedCardPack = request.get('card-pack-name');
+    const requestedCardPack = request.get('card-pack-name');
     console.log(requestedCardPack);
     if (requestedCardPack === null || requestedCardPack === undefined) {
         response.status(400).send('card-pack-name not found in request headers');
@@ -48,16 +48,22 @@ export const getPack = functions.https.onRequest((request, response) => {
                         responseObj: {whiteCardCount: whiteCardCount, blackCardCount: blackCardCount}
                     });
                     return
+                }).catch(() => {
+                    response.status(500).send("failed to fetch white card deck");
                 })
+            }).catch(() => {
+                response.status(500).send("failed to fetch black card deck");
             });
         }
         return
+    }).catch(() => {
+        response.status(500).send('was not able to validate card pack');
     });
 });
 
 export const getWhiteCard = functions.https.onRequest((request, response) => {
-    let requestedCardPack = request.get('card-pack-name');
-    let requestedCardId = request.get('card-id');
+    const requestedCardPack = request.get('card-pack-name');
+    const requestedCardId = request.get('card-id');
     if (requestedCardPack === null || requestedCardPack === undefined) {
         response.status(400).send('card-pack-name not found in request headers');
         return
@@ -89,12 +95,14 @@ export const getWhiteCard = functions.https.onRequest((request, response) => {
             })
         }
         return
+    }).catch(() => {
+        response.status(500).send('card pack validation failed');
     });
 });
 
 export const getBlackCard = functions.https.onRequest((request, response) => {
-    let requestedCardPack = request.get('card-pack-name');
-    let requestedCardId = request.get('card-id');
+    const requestedCardPack = request.get('card-pack-name');
+    const requestedCardId = request.get('card-id');
     if (requestedCardPack === null || requestedCardPack === undefined) {
         response.status(400).send('card-pack-name not found in request headers');
         return
@@ -126,5 +134,7 @@ export const getBlackCard = functions.https.onRequest((request, response) => {
             })
         }
         return
-    });
+    }).catch(() => {
+        response.status(500).send('card pack validation failed');
+    });;
 });
